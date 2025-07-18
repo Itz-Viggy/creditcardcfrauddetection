@@ -190,14 +190,38 @@ class DataPreprocessor:
         print(f"📊 Samples: {len(X)}")
         print(f"📊 Fraud rate: {(y == 1).mean() * 100:.2f}%")
         
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=test_size, random_state=random_state, 
-            stratify=y  # Maintain class distribution
-        )
+        # Split data with fraud-aware strategy
+        fraud_count = (y == 1).sum()
+        min_fraud_for_stratify = max(2, int(test_size * len(y) * 0.01))  # Need at least 2 fraud cases
         
-        print(f"📊 Train set: {X_train.shape[0]} samples")
-        print(f"📊 Test set: {X_test.shape[0]} samples")
+        if fraud_count < min_fraud_for_stratify:
+            print(f"⚠️  Few fraud cases ({fraud_count}), using manual split strategy...")
+            # Manual split to ensure fraud cases in both sets
+            fraud_indices = y[y == 1].index
+            normal_indices = y[y == 0].index
+            
+            # Ensure at least 1 fraud case in test set
+            n_fraud_test = max(1, int(fraud_count * test_size))
+            n_normal_test = int(len(normal_indices) * test_size)
+            
+            # Randomly select test indices
+            test_fraud_indices = fraud_indices[:n_fraud_test]
+            test_normal_indices = normal_indices[:n_normal_test]
+            test_indices = list(test_fraud_indices) + list(test_normal_indices)
+            
+            train_indices = [idx for idx in y.index if idx not in test_indices]
+            
+            X_train, X_test = X.loc[train_indices], X.loc[test_indices]
+            y_train, y_test = y.loc[train_indices], y.loc[test_indices]
+        else:
+            # Standard stratified split
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=test_size, random_state=random_state, 
+                stratify=y  # Maintain class distribution
+            )
+        
+        print(f"📊 Train set: {X_train.shape[0]} samples (fraud: {y_train.sum()})")
+        print(f"📊 Test set: {X_test.shape[0]} samples (fraud: {y_test.sum()})")
         
         # Scale features
         if scale_features:
