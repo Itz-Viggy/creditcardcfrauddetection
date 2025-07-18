@@ -1,0 +1,38 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+develop-eggs/
+.eggs/
+*.manifest
+*.spec
+
+# Virtual envs
+venv/
+.env/
+.env.bak/
+*.venv/
+
+# Jupyter & notebooks
+.ipynb_checkpoints/
+
+# Data & models
+data/
+*.csv
+*.parquet
+*.h5
+models/
+*.pkl
+*.joblib
+
+# --- VS Code ---
+.vscode/
+
+# OS cruft
+.DS_Store
+Thumbs.db
