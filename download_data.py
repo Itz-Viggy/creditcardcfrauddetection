@@ -29,17 +29,34 @@ def download_kaggle_dataset():
         return
     
     # Check if Kaggle credentials are configured
-    kaggle_config_path = Path.home() / ".kaggle" / "kaggle.json"
-    if not kaggle_config_path.exists():
+    # Check both WSL and Windows paths
+    kaggle_config_paths = [
+        Path.home() / ".kaggle" / "kaggle.json",  # WSL/Linux path
+        Path("/mnt/c/Users") / os.getenv('USER', 'vigne') / ".kaggle" / "kaggle.json",  # Windows path via WSL
+        Path("C:/Users/vigne/.kaggle/kaggle.json")  # Direct Windows path
+    ]
+    
+    kaggle_config_path = None
+    for path in kaggle_config_paths:
+        if path.exists():
+            kaggle_config_path = path
+            break
+    
+    if kaggle_config_path is None:
         print("⚠️  Kaggle credentials not found!")
-        print(f"Expected location: {kaggle_config_path}")
+        print(f"Checked paths: {[str(p) for p in kaggle_config_paths]}")
         print("\n🔧 To set up Kaggle API:")
         print("1. Go to https://www.kaggle.com/account")
         print("2. Click 'Create New API Token'")
-        print("3. Place the downloaded kaggle.json file in the .kaggle folder")
+        print("3. Place the downloaded kaggle.json file in ~/.kaggle/ folder")
         print("\nFalling back to sample dataset creation...")
         create_sample_dataset()
         return
+    
+    print(f"✅ Found Kaggle credentials at: {kaggle_config_path}")
+    
+    # Set environment variable for Kaggle API
+    os.environ['KAGGLE_CONFIG_DIR'] = str(kaggle_config_path.parent)
     
     try:
         print("📥 Attempting to download dataset from Kaggle...")
@@ -114,7 +131,7 @@ def create_sample_dataset():
         data[f'V{i}'] = np.random.normal(0, 1, n_samples)
     
     # Create imbalanced target (similar to real dataset)
-    fraud_rate = 0.002  # 0.2% fraud rate
+    fraud_rate = 0.05  # 5% fraud rate (increased for better training)
     n_fraud = int(n_samples * fraud_rate)
     data['Class'] = np.concatenate([
         np.zeros(n_samples - n_fraud),
