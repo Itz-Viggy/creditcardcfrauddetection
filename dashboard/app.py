@@ -17,7 +17,7 @@ from pathlib import Path
 # Configure page
 st.set_page_config(
     page_title="Credit Card Fraud Detection Dashboard",
-    page_icon="🔒",
+    page_icon="💳",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -337,8 +337,8 @@ def main():
     """Main dashboard function"""
     
     # Title and header
-    st.title("🔒 Credit Card Fraud Detection Dashboard")
-    st.markdown("### Phase 1 MVP - Batch Fraud Detection System")
+    st.title("💳 Credit Card Fraud Detection Dashboard")
+    
     
     # Load data
     with st.spinner("Loading data..."):
